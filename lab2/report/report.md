@@ -108,4 +108,4 @@ init 清空链表和计数；init_memmap 将 reserved 区间转为空闲块，�
 
 ## 8. 提交边界
 
-代码、报告、prompt、证据均在 lab2，lab1 原始校验值见 [lab1-sha256.json](lab1-sha256.json)。仓库外 OS/知识点汇总.md 不随当前仓库自动提交，根 README 和 lab1 不变。用户已授权在复测后将 lab2-b-pmm 合入 main 并推送，使用具体描述工作内容的英文提交信息；合并结果以 Git 历史为准。正式分页集成、课程原测试、QEMU 源码调试和最终报告整合仍需 A/C 完成并共同复核。
+代码、报告、prompt、证据均在 lab2，lab1 原始校验值见 [lab1-sha256.json](lab1-sha256.json)。仓库外 OS/知识点汇总.md 不随当前仓库自动提交，根 README 和 lab1 不变。复测通过后，使用具体描述工作内容的英文提交信息，将 lab2-b-pmm 推送到 dowser47 的 fork，再向原仓库 main 提交 Pull Request，由维护者审核合并。本地曾验证合并关系，但不代表远端已合并。正式分页集成、课程原测试、QEMU 源码调试和最终报告整合仍需 A/C 完成并共同复核。

@@ -43,4 +43,4 @@ Fit 空闲头的 property 为页数；Buddy 空闲头的 property 为阶，order
 - 当前没有课程 basic_check/best_fit_check；取得后原样接入，先核对状态约定，不修改原测试迁就实现。
 - 跑 grade-all、grade-boot；分页后调整继承的低地址启动断言，新增高地址、权限和 TLB 验证。Bare 结果不能直接外推。
 - QEMU 源码、调试符号、宿主 GDB 附加及地址翻译调用路径仍属 C，本次没有这些调试记录。
-- 用户已授权合并，复测通过后将 lab2-b-pmm 以保留合并提交的方式集成到 main 并推送；提交信息使用英文具体说明改动，结果以 Git 历史为准。
+- 用户没有原仓库写权限，复测后的 lab2-b-pmm 推送到 dowser47 的 fork，再向原仓库 main 提交 Pull Request，由维护者决定合并；提交信息使用英文具体说明改动，远端状态以 GitHub PR 为准。
