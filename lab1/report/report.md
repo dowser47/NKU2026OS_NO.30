@@ -9,8 +9,8 @@
 | 小组成员 | 2412267—高家铭、2414067—窦思微、2411520—谢国辉 |
 | 首次实验完成日期 | 2026-10-07 |
 | 交付完成与重新验证日期 | 2026-10-10 |
-| 提交仓库 | [NKU2026OS_NO.30](https://github.com/kighter123456/NKU2026OS_NO.30/tree/lab1) |
-| 实验分支 | `lab1` |
+| 提交仓库 | [NKU2026OS_NO.30](https://github.com/kighter123456/NKU2026OS_NO.30/tree/main/lab1) |
+| 实验分支 | `main`，实验目录 `lab1/` |
 
 ### 小组分工
 
@@ -42,7 +42,7 @@
 
 本表仅记录本会话能确认的统一工具环境，没有证据表明各成员另行使用了其他工具或模型。提示词汇总按实验操作环节整理，供阅读代码、实操和复核时使用，并非历史对话的逐字记录。
 
-宿主机为 Windows，使用已有 Ubuntu WSL2 作为 Linux 开发环境。仓库根目录对应 `/mnt/e/桌面/OSLab/lab1`，实验源码位于 `code/`，即 `/mnt/e/桌面/OSLab/lab1/code`。本文的源码路径相对于 `code/`，图片路径相对于 `report/`。交叉编译器在 x86_64 上执行，生成 RV64 机器码；QEMU 模拟 RISC-V CPU、内存、串口及固件。
+宿主机为 Windows，使用已有 Ubuntu WSL2 作为 Linux 开发环境。仓库根目录对应 `/mnt/e/桌面/OSLab`，实验源码位于 `lab1/code/`，即 `/mnt/e/桌面/OSLab/lab1/code`。本文的源码路径相对于实验中的 `code/`，图片路径相对于 `report/`。交叉编译器在 x86_64 上执行，生成 RV64 机器码；QEMU 模拟 RISC-V CPU、内存、串口及固件。
 
 | 工具 | 实际版本 | 用途 |
 | --- | --- | --- |
@@ -299,7 +299,7 @@ GDB 根据 `bin/kernel` 提供的符号理解代码，通过 QEMU 的远程调�
 
 ### 测试方式与范围
 
-在仓库根目录进入 `code/`，执行 `make -B -j2` 全量编译、`make grade` 启动验证及 `make qemu` 输出检查。2026-10-10 的原始输出保存在 `code/evidence/`，重验证结果均通过。QEMU 的无限循环由测试流程主动终止，日志中的终止消息不表示内核崩溃。
+在仓库根目录进入 `lab1/code/`，执行 `make -B -j2` 全量编译、`make grade` 启动验证及 `make qemu` 输出检查。2026-10-10 的原始输出保存在实验的 `code/evidence/`，重验证结果均通过。QEMU 的无限循环由测试流程主动终止，日志中的终止消息不表示内核崩溃。
 
 截图说明：下列 PNG 是浏览器对真实命令日志显示页面的截图，并非桌面终端窗口的原生截屏。测试输出没有改写；较长 GDB 日志按阶段截取显示，完整内容仍可通过原始日志核查。图 7 显示 2026-10-07 留存的修复前失败记录，其余六张显示 2026-10-10 重新验证结果。
 
@@ -405,4 +405,4 @@ wsl -d Ubuntu --cd "E:\桌面\OSLab\lab1\code" --exec make grade
 
 ### 交付状态
 
-本次交付采用 `lab1` 分支，两个目录分别是 `code/` 和 `report/`。实现源码、验证脚本与原始记录在 `code/`；本文为 `report/report.md`，提示词为 `report/prompt.md`，截图位于 `report/images/`。离线指导书、其压缩包和可重建的编译产物均排除上传。
+本次交付在 `main` 分支的 `lab1/` 目录下，包含 `code/` 和 `report/`。实现源码、验证脚本与原始记录在 `lab1/code/`；本文为 `lab1/report/report.md`，提示词为 `lab1/report/prompt.md`，截图位于 `lab1/report/images/`。离线指导书、其压缩包和可重建的编译产物均排除上传。

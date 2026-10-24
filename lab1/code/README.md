@@ -1,6 +1,6 @@
 # Lab1：最小可执行内核与启动流程
 
-本分支 `lab1` 按课程要求交付两个目录：`code/` 保存实验源码和验证记录，`report/` 保存报告、提示词及测试截图。
+本实验位于仓库的 `lab1/` 目录，按课程要求交付两个目录：`code/` 保存实验源码和验证记录，`report/` 保存报告、提示词及测试截图。
 
 - [实验报告](../report/report.md)
 - [提示词汇总](../report/prompt.md)
@@ -12,7 +12,7 @@
 在 Ubuntu 中，从仓库根目录执行：
 
 ```bash
-cd code
+cd lab1/code
 make
 make grade
 make qemu
@@ -61,4 +61,4 @@ info registers pc sp ra
 
 ## Git 提交
 
-小组仓库：[NKU2026OS_NO.30 的 lab1 分支](https://github.com/kighter123456/NKU2026OS_NO.30/tree/lab1)。`code/bin/`、`code/obj/`、离线指导书及压缩包不纳入版本管理；克隆后运行 `make` 重新生成镜像。
+小组仓库：[NKU2026OS_NO.30 的 lab1 目录](https://github.com/kighter123456/NKU2026OS_NO.30/tree/main/lab1)。`code/bin/`、`code/obj/`、离线指导书及压缩包不纳入版本管理；克隆后进入 `lab1/code/`，运行 `make` 重新生成镜像。

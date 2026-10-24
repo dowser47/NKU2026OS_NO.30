@@ -1,0 +1,12 @@
+bin/
+obj/
+lab2026-book/
+lab2026-book.zip
+__pycache__/
+*.py[cod]
+.gdb.in
+.qemu.out
+proj*-handin.tar.gz
+/output/
+/.playwright-cli/
+/实验报告模板.md
