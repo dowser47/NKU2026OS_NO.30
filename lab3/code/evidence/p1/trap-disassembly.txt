@@ -1,0 +1,43 @@
+
+bin/best_fit/0/kernel:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+ffffffffc0200acc <__trapret>:
+ffffffffc0200acc:	6412                	ld	s0,256(sp)
+ffffffffc0200ace:	64b2                	ld	s1,264(sp)
+ffffffffc0200ad0:	10041073          	csrw	sstatus,s0
+ffffffffc0200ad4:	14149073          	csrw	sepc,s1
+ffffffffc0200ad8:	60a2                	ld	ra,8(sp)
+ffffffffc0200ada:	61e2                	ld	gp,24(sp)
+ffffffffc0200adc:	7202                	ld	tp,32(sp)
+ffffffffc0200ade:	72a2                	ld	t0,40(sp)
+ffffffffc0200ae0:	7342                	ld	t1,48(sp)
+ffffffffc0200ae2:	73e2                	ld	t2,56(sp)
+ffffffffc0200ae4:	6406                	ld	s0,64(sp)
+ffffffffc0200ae6:	64a6                	ld	s1,72(sp)
+ffffffffc0200ae8:	6546                	ld	a0,80(sp)
+ffffffffc0200aea:	65e6                	ld	a1,88(sp)
+ffffffffc0200aec:	7606                	ld	a2,96(sp)
+ffffffffc0200aee:	76a6                	ld	a3,104(sp)
+ffffffffc0200af0:	7746                	ld	a4,112(sp)
+ffffffffc0200af2:	77e6                	ld	a5,120(sp)
+ffffffffc0200af4:	680a                	ld	a6,128(sp)
+ffffffffc0200af6:	68aa                	ld	a7,136(sp)
+ffffffffc0200af8:	694a                	ld	s2,144(sp)
+ffffffffc0200afa:	69ea                	ld	s3,152(sp)
+ffffffffc0200afc:	7a0a                	ld	s4,160(sp)
+ffffffffc0200afe:	7aaa                	ld	s5,168(sp)
+ffffffffc0200b00:	7b4a                	ld	s6,176(sp)
+ffffffffc0200b02:	7bea                	ld	s7,184(sp)
+ffffffffc0200b04:	6c0e                	ld	s8,192(sp)
+ffffffffc0200b06:	6cae                	ld	s9,200(sp)
+ffffffffc0200b08:	6d4e                	ld	s10,208(sp)
+ffffffffc0200b0a:	6dee                	ld	s11,216(sp)
+ffffffffc0200b0c:	7e0e                	ld	t3,224(sp)
+ffffffffc0200b0e:	7eae                	ld	t4,232(sp)
+ffffffffc0200b10:	7f4e                	ld	t5,240(sp)
+ffffffffc0200b12:	7fee                	ld	t6,248(sp)
+ffffffffc0200b14:	6142                	ld	sp,16(sp)
+ffffffffc0200b16:	10200073          	sret

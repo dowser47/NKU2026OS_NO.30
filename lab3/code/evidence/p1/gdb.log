@@ -1,0 +1,121 @@
+0x0000000000001000 in ?? ()
+Hardware assisted breakpoint 1 at 0xffffffffc0200a4e: file kern/trap/trap.c, line 23.
+
+Breakpoint 1, idt_init () at kern/trap/trap.c:23
+23	    write_csr(sscratch, 0);
+kern_init (hartid=0, dtb_pa=2279604224) at kern/init/init.c:22
+22	   while (1)
+CASE 4 start 0xffffffffc0200080
+Hardware assisted breakpoint 2 at 0xffffffffc0200a64: file kern/trap/trapentry.S, line 93.
+
+Breakpoint 2, __alltraps () at kern/trap/trapentry.S:93
+93	    SAVE_ALL
+ENTRY 0xffffffffc0200a64
+Hardware assisted breakpoint 3 at 0xffffffffc0200a60: file kern/trap/trap.c, line 54.
+
+Breakpoint 3, trap (tf=0xffffffffc0206ec0) at kern/trap/trap.c:54
+54	void trap(struct trapframe *tf) { trap_dispatch(tf); }
+TRAP 0xffffffffc0200a60
+Hardware assisted breakpoint 4 at 0xffffffffc0200acc: file kern/trap/trapentry.S, line 100.
+
+Breakpoint 4, __trapret () at kern/trap/trapentry.S:100
+100	    RESTORE_ALL
+RESTORE 0xffffffffc0200acc
+0xffffffffc0200ace	100	    RESTORE_ALL
+0xffffffffc0200ad0	100	    RESTORE_ALL
+0xffffffffc0200ad4	100	    RESTORE_ALL
+0xffffffffc0200ad8	100	    RESTORE_ALL
+0xffffffffc0200ada	100	    RESTORE_ALL
+0xffffffffc0200adc	100	    RESTORE_ALL
+0xffffffffc0200ade	100	    RESTORE_ALL
+0xffffffffc0200ae0	100	    RESTORE_ALL
+0xffffffffc0200ae2	100	    RESTORE_ALL
+0xffffffffc0200ae4	100	    RESTORE_ALL
+0xffffffffc0200ae6	100	    RESTORE_ALL
+0xffffffffc0200ae8	100	    RESTORE_ALL
+0xffffffffc0200aea	100	    RESTORE_ALL
+0xffffffffc0200aec	100	    RESTORE_ALL
+0xffffffffc0200aee	100	    RESTORE_ALL
+0xffffffffc0200af0	100	    RESTORE_ALL
+0xffffffffc0200af2	100	    RESTORE_ALL
+0xffffffffc0200af4	100	    RESTORE_ALL
+0xffffffffc0200af6	100	    RESTORE_ALL
+0xffffffffc0200af8	100	    RESTORE_ALL
+0xffffffffc0200afa	100	    RESTORE_ALL
+0xffffffffc0200afc	100	    RESTORE_ALL
+0xffffffffc0200afe	100	    RESTORE_ALL
+0xffffffffc0200b00	100	    RESTORE_ALL
+0xffffffffc0200b02	100	    RESTORE_ALL
+0xffffffffc0200b04	100	    RESTORE_ALL
+0xffffffffc0200b06	100	    RESTORE_ALL
+0xffffffffc0200b08	100	    RESTORE_ALL
+0xffffffffc0200b0a	100	    RESTORE_ALL
+0xffffffffc0200b0c	100	    RESTORE_ALL
+0xffffffffc0200b0e	100	    RESTORE_ALL
+0xffffffffc0200b10	100	    RESTORE_ALL
+0xffffffffc0200b12	100	    RESTORE_ALL
+0xffffffffc0200b14	100	    RESTORE_ALL
+__trapret () at kern/trap/trapentry.S:102
+102	    sret
+Hardware assisted breakpoint 5 at 0xffffffffc0200084: file kern/debug/panic.c, line 5.
+
+Breakpoint 5, 0xffffffffc0200084 in __panic (file=0x1234040a <error: Cannot access memory at address 0x1234040a>, line=305398795, message=0x1234040c <error: Cannot access memory at address 0x1234040c>) at kern/debug/panic.c:5
+5	    cprintf("\n[PANIC] %s:%d: %s\n", file, line, message);
+CASE 2 start 0xffffffffc0200084
+Hardware assisted breakpoint 6 at 0xffffffffc0200a64: file kern/trap/trapentry.S, line 93.
+
+Breakpoint 6, __alltraps () at kern/trap/trapentry.S:93
+93	    SAVE_ALL
+ENTRY 0xffffffffc0200a64
+Hardware assisted breakpoint 7 at 0xffffffffc0200a60: file kern/trap/trap.c, line 54.
+
+Breakpoint 7, trap (tf=0xffffffffc0206ec0) at kern/trap/trap.c:54
+54	void trap(struct trapframe *tf) { trap_dispatch(tf); }
+TRAP 0xffffffffc0200a60
+Hardware assisted breakpoint 8 at 0xffffffffc0200acc: file kern/trap/trapentry.S, line 100.
+
+Breakpoint 8, __trapret () at kern/trap/trapentry.S:100
+100	    RESTORE_ALL
+RESTORE 0xffffffffc0200acc
+0xffffffffc0200ace	100	    RESTORE_ALL
+0xffffffffc0200ad0	100	    RESTORE_ALL
+0xffffffffc0200ad4	100	    RESTORE_ALL
+0xffffffffc0200ad8	100	    RESTORE_ALL
+0xffffffffc0200ada	100	    RESTORE_ALL
+0xffffffffc0200adc	100	    RESTORE_ALL
+0xffffffffc0200ade	100	    RESTORE_ALL
+0xffffffffc0200ae0	100	    RESTORE_ALL
+0xffffffffc0200ae2	100	    RESTORE_ALL
+0xffffffffc0200ae4	100	    RESTORE_ALL
+0xffffffffc0200ae6	100	    RESTORE_ALL
+0xffffffffc0200ae8	100	    RESTORE_ALL
+0xffffffffc0200aea	100	    RESTORE_ALL
+0xffffffffc0200aec	100	    RESTORE_ALL
+0xffffffffc0200aee	100	    RESTORE_ALL
+0xffffffffc0200af0	100	    RESTORE_ALL
+0xffffffffc0200af2	100	    RESTORE_ALL
+0xffffffffc0200af4	100	    RESTORE_ALL
+0xffffffffc0200af6	100	    RESTORE_ALL
+0xffffffffc0200af8	100	    RESTORE_ALL
+0xffffffffc0200afa	100	    RESTORE_ALL
+0xffffffffc0200afc	100	    RESTORE_ALL
+0xffffffffc0200afe	100	    RESTORE_ALL
+0xffffffffc0200b00	100	    RESTORE_ALL
+0xffffffffc0200b02	100	    RESTORE_ALL
+0xffffffffc0200b04	100	    RESTORE_ALL
+0xffffffffc0200b06	100	    RESTORE_ALL
+0xffffffffc0200b08	100	    RESTORE_ALL
+0xffffffffc0200b0a	100	    RESTORE_ALL
+0xffffffffc0200b0c	100	    RESTORE_ALL
+0xffffffffc0200b0e	100	    RESTORE_ALL
+0xffffffffc0200b10	100	    RESTORE_ALL
+0xffffffffc0200b12	100	    RESTORE_ALL
+0xffffffffc0200b14	100	    RESTORE_ALL
+__trapret () at kern/trap/trapentry.S:102
+102	    sret
+Hardware assisted breakpoint 9 at 0xffffffffc0200086: file kern/debug/panic.c, line 5.
+
+Breakpoint 9, 0xffffffffc0200086 in __panic (file=0x1234020a <error: Cannot access memory at address 0x1234020a>, line=305398283, message=0x1234020c <error: Cannot access memory at address 0x1234020c>) at kern/debug/panic.c:5
+5	    cprintf("\n[PANIC] %s:%d: %s\n", file, line, message);
+P1_RESULTS=[{"frame_bytes": 288, "instruction_bytes": 4, "restored_gprs": 32, "saved_gprs": 32, "status_restored": true, "updated_epc_used": true}, {"frame_bytes": 288, "instruction_bytes": 2, "restored_gprs": 32, "saved_gprs": 32, "status_restored": true, "updated_epc_used": true}]
+P1 PASS: real 32-bit ebreak and 16-bit c.ebreak; frame, GPRs, CSRs, sp, sret

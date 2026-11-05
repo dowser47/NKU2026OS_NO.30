@@ -1,0 +1,95 @@
+0x0000000000001000 in ?? ()
+Hardware assisted breakpoint 1 at 0xffffffffc0200a4e: file kern/trap/trap.c, line 23.
+
+Breakpoint 1, idt_init () at kern/trap/trap.c:23
+23	    write_csr(sscratch, 0);
+kern_init (hartid=0, dtb_pa=2279604224) at kern/init/init.c:22
+22	   while (1)
+CASE 4 start 0xffffffffc0200080
+Hardware assisted breakpoint 2 at 0xffffffffc0200a64: file kern/trap/trapentry.S, line 93.
+
+Breakpoint 2, __alltraps () at kern/trap/trapentry.S:93
+93	    SAVE_ALL
+ENTRY 0xffffffffc0200a64
+Hardware assisted breakpoint 3 at 0xffffffffc0200a60: file kern/trap/trap.c, line 54.
+
+Breakpoint 3, trap (tf=0xffffffffc0206ec0) at kern/trap/trap.c:54
+54	void trap(struct trapframe *tf) { trap_dispatch(tf); }
+TRAP 0xffffffffc0200a60
+Hardware assisted breakpoint 4 at 0xffffffffc0200acc: file kern/trap/trapentry.S, line 100.
+
+Breakpoint 4, __trapret () at kern/trap/trapentry.S:100
+100	    RESTORE_ALL
+RESTORE 0xffffffffc0200acc
+STEP 0xffffffffc0200acc
+0xffffffffc0200ace	100	    RESTORE_ALL
+STEP 0xffffffffc0200ace
+0xffffffffc0200ad0	100	    RESTORE_ALL
+STEP 0xffffffffc0200ad0
+0xffffffffc0200ad4	100	    RESTORE_ALL
+STEP 0xffffffffc0200ad4
+0xffffffffc0200ad8	100	    RESTORE_ALL
+STEP 0xffffffffc0200ad8
+0xffffffffc0200ada	100	    RESTORE_ALL
+STEP 0xffffffffc0200ada
+0xffffffffc0200adc	100	    RESTORE_ALL
+STEP 0xffffffffc0200adc
+0xffffffffc0200ade	100	    RESTORE_ALL
+STEP 0xffffffffc0200ade
+0xffffffffc0200ae0	100	    RESTORE_ALL
+STEP 0xffffffffc0200ae0
+0xffffffffc0200ae2	100	    RESTORE_ALL
+STEP 0xffffffffc0200ae2
+0xffffffffc0200ae4	100	    RESTORE_ALL
+STEP 0xffffffffc0200ae4
+0xffffffffc0200ae6	100	    RESTORE_ALL
+STEP 0xffffffffc0200ae6
+0xffffffffc0200ae8	100	    RESTORE_ALL
+STEP 0xffffffffc0200ae8
+0xffffffffc0200aea	100	    RESTORE_ALL
+STEP 0xffffffffc0200aea
+0xffffffffc0200aec	100	    RESTORE_ALL
+STEP 0xffffffffc0200aec
+0xffffffffc0200aee	100	    RESTORE_ALL
+STEP 0xffffffffc0200aee
+0xffffffffc0200af0	100	    RESTORE_ALL
+STEP 0xffffffffc0200af0
+0xffffffffc0200af2	100	    RESTORE_ALL
+STEP 0xffffffffc0200af2
+0xffffffffc0200af4	100	    RESTORE_ALL
+STEP 0xffffffffc0200af4
+0xffffffffc0200af6	100	    RESTORE_ALL
+STEP 0xffffffffc0200af6
+0xffffffffc0200af8	100	    RESTORE_ALL
+STEP 0xffffffffc0200af8
+0xffffffffc0200afa	100	    RESTORE_ALL
+STEP 0xffffffffc0200afa
+0xffffffffc0200afc	100	    RESTORE_ALL
+STEP 0xffffffffc0200afc
+0xffffffffc0200afe	100	    RESTORE_ALL
+STEP 0xffffffffc0200afe
+0xffffffffc0200b00	100	    RESTORE_ALL
+STEP 0xffffffffc0200b00
+0xffffffffc0200b02	100	    RESTORE_ALL
+STEP 0xffffffffc0200b02
+0xffffffffc0200b04	100	    RESTORE_ALL
+STEP 0xffffffffc0200b04
+0xffffffffc0200b06	100	    RESTORE_ALL
+STEP 0xffffffffc0200b06
+0xffffffffc0200b08	100	    RESTORE_ALL
+STEP 0xffffffffc0200b08
+0xffffffffc0200b0a	100	    RESTORE_ALL
+STEP 0xffffffffc0200b0a
+0xffffffffc0200b0c	100	    RESTORE_ALL
+STEP 0xffffffffc0200b0c
+0xffffffffc0200b0e	100	    RESTORE_ALL
+STEP 0xffffffffc0200b0e
+0xffffffffc0200b10	100	    RESTORE_ALL
+STEP 0xffffffffc0200b10
+0xffffffffc0200b12	100	    RESTORE_ALL
+STEP 0xffffffffc0200b12
+0xffffffffc0200b14	100	    RESTORE_ALL
+STEP 0xffffffffc0200b14
+__trapret () at kern/trap/trapentry.S:102
+102	    sret
+STEP 0xffffffffc0200b16
