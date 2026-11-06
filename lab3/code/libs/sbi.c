@@ -1,10 +1,9 @@
-// libs/sbi.c
 #include <sbi.h>
 #include <defs.h>
 
 
 uint64_t SBI_SET_TIMER = 0;
-uint64_t SBI_CONSOLE_PUTCHAR = 1;
+uint64_t SBI_CONSOLE_PUTCHAR = 1; 
 uint64_t SBI_CONSOLE_GETCHAR = 2;
 uint64_t SBI_CLEAR_IPI = 3;
 uint64_t SBI_SEND_IPI = 4;
@@ -35,4 +34,13 @@ void sbi_console_putchar(unsigned char ch) {
 
 void sbi_set_timer(unsigned long long stime_value) {
     sbi_call(SBI_SET_TIMER, stime_value, 0, 0);
+}
+
+int sbi_console_getchar(void) {
+    return sbi_call(SBI_CONSOLE_GETCHAR, 0, 0, 0);
+}
+
+void sbi_shutdown(void)
+{
+	sbi_call(SBI_SHUTDOWN, 0, 0, 0);
 }

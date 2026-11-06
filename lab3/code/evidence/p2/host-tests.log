@@ -1,0 +1,3 @@
+P2 HOST PASS: timer; schedule=1100 lines=11 shutdown=1 frames=0
+P2 HOST PASS: independent-count; schedule=11 lines=11 shutdown=1 frames=0
+P2 HOST PASS: non-timer; schedule=0 lines=0 shutdown=0 frames=3

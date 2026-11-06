@@ -1,0 +1,10 @@
+{
+  "kern/driver/clock.c": true,
+  "libs/sbi.h": true,
+  "kern/trap/trap.h": true,
+  "kern/trap/trapentry.S": true,
+  "trap.c_outside_interrupt_handler_unchanged": true,
+  "exception_handler_still_empty": true,
+  "notes_only_outside_repository": true,
+  "no_note_download_metadata_in_repo": true
+}

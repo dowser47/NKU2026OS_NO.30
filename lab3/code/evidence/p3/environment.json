@@ -1,0 +1,19 @@
+{
+  "qemu_command": [
+    "qemu-system-riscv64",
+    "-machine",
+    "virt",
+    "-m",
+    "128M",
+    "-nographic",
+    "-bios",
+    "default",
+    "-kernel",
+    "bin/best_fit/0/ucore.img",
+    "-S",
+    "-gdb",
+    "tcp:127.0.0.1:54210"
+  ],
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+  "gdb_version": "GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1"
+}

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "pmm": "first_fit",
+  "real_exception_cases": 4,
+  "gpr_restored": 32,
+  "host_tests": false,
+  "length_cases": 8,
+  "fallback_cases": 15,
+  "pmm_guard_states": [
+    "enabled",
+    "disabled",
+    "nested",
+    "allocation failure"
+  ],
+  "timer_ticks_at_shutdown": 1000,
+  "tick_lines": 10,
+  "qemu_exit": 0,
+  "trap_sha256": "da898da1b8870f28171f849ad9e34a78c1abfc017fc1cc3b73459f27e280c25d"
+}

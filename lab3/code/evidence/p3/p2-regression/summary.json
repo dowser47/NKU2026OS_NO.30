@@ -1,0 +1,16 @@
+{
+  "stage": "P2",
+  "passed": true,
+  "host_scenarios": 3,
+  "tick_lines": 10,
+  "qemu_exit": 0,
+  "source_sha256": {
+    "kern/trap/trap.c": "7371b35c00c3321edde613fd2645f42146e5c0b8bade8c141f840fd8d18ff192",
+    "kern/init/init.c": "881fff9bd841d0a917b6d3dff64beb500c19b22ebc69c4dc257ba6c6ef93e1bc",
+    "libs/sbi.c": "d305e147dfbb550311b5776e4de6d714814f727e708f031fcecfbeac2b3f9597",
+    "kern/driver/clock.c": "a43ffaf4fc3edb0b4e57a4c9f2fa5584d1fbe38234014e38bc56338af47d45d2",
+    "libs/sbi.h": "8edfb7c62872cdfbe3e5dc2b8fd6d7248180879581ff019d2a3135eb846f1631",
+    "kern/trap/trap.h": "b204438cbe95027537cf1b97797af0a6fb13e1acacff91fddbeb35a5253d296e",
+    "kern/trap/trapentry.S": "6ba57cad07a90793dbeb213fdd35651473e1a6a21f49c99d24002db719d24245"
+  }
+}

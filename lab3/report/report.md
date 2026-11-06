@@ -1,71 +1,131 @@
-# Lab3 实验报告：中断与异常（P1 阶段稿）
+# Lab3 实验报告：中断与异常
 
-> 当前只完成 P1，不是最终提交版。P2/P3、综合实验验证与报告补全待继续；未 commit、未 push。
+2026-11-06，基于提供的 `lab3_origin/lab3_new` 完成基线整合。原始评分测试100/100；补充QEMU/GDB验证在First-Fit和Best-Fit下均通过。本次未执行commit或push。
 
 ## 1. 实验目标与整体逻辑
 
-本实验承接 lab2 的内存初始化和页分配功能，建立完整的 Trap 处理链。实现顺序为：先把被打断代码的现场保存为 frame，再让汇编入口按 ABI 调用 C 函数，恢复现场并 sret；随后补齐时钟中断处理；最后实现非法指令和断点异常处理，使内核可以按异常指令实际长度推进执行位置。
+本实验在lab2物理内存管理基础上建立完整Trap通路：硬件记录CSR并跳至stvec，汇编保存上下文并按ABI调用C入口，C按原因处理中断或异常，汇编恢复现场，最后sret返回。先保证上下文与调用边界可信，再实现时钟事件，最后处理需要推进返回位置的同步异常。
 
-这种顺序先解决底层上下文是否可信，再解决具体事件语义。若恢复 sp 或 epc 错误，即使 C handler 输出正确，也不能认为 Trap 处理成功。
+时钟中断应返回原执行位置；非法指令和断点按题目要求跳过故障指令。两者共享入口和恢复代码，但epc语义不同。只打印正确提示不能证明实验成功，还要检查寄存器、栈和异常之后的执行流。
 
-## 2. 基线和准备工作
+## 2. 基线、目录与补齐范围
 
-远端为 `https://github.com/kighter123456/NKU2026OS_NO.30`；2026-11-05 拉取确认基线 `328fd3afd8036fb87a6790b3ee697a05e2100a46` 已最新。本地已有 lab2 验证文件修改保留，实验在新建 `lab3/code` 中开展。
+最初从lab2复制并依据离线指导书重建框架，遗漏了原始sync.h、PMM临界区和若干诊断接口。此前自建测试通过只说明当时覆盖的执行路径正常，不能证明与题目原始代码一致。本轮取得用户提供的原始包后，以它替换kern、libs、tools和Makefile，再填入题目空白。
 
-复制 lab2 源码和工具，不复制编译产物与旧验证证据。lab2 不含 Trap/clock/intr 框架，缺失部分依据本地指导书正文补齐，来源与限制详见 lab3 README。没有完整官方 lab3 源码包可核对，因此诊断输出、SHUTDOWN_AFTER 默认值的最终一致性仍需后续核对。
+56个原始文件全部覆盖，46个逐字节一致；修改清单和两侧SHA-256见 `../code/evidence/baseline-integration/source-comparison.json`。旧版lab3完整归档于仓库外 `OS/lab3/backups/20261106-151429/lab3-before-origin.tar.gz`。旧版Buddy/SLUB及lab2专用验证工具不再混入当前lab3，lab2原工程保留。旧P1/P2/P3日志只作为历史记录。
 
-## 3. P1：Trap 上下文恢复与入口
+原始包在pmm.c留下page_init空白，在best_fit_pmm.c留下算法与注册空白。本轮按lab2的内存管理思路适配原始Page结构：使用DTB得到内存范围，限制在框架128MiB窗口内；在内核end之后按页对齐建立Page数组，保留固件、内核和描述符占用页，再交出剩余完整页。npage是最高物理页号的上界，数组下标需要减nbase。原框架默认First-Fit；通过PMM_USE_BEST_FIT可切换Best-Fit。
 
-### 3.1 Specification 与 Prompt 设计
+Best-Fit遍历地址有序空闲链表，选择满足请求的最小块，精确匹配时提前结束；分配时拆分，释放后与相邻前驱、后继合并。原给定basic_check、default_check、best_fit_check均未修改。
 
-完整原文存于 `../提示词.md` 的 P1。Specification 明确 frame 中每个槽位的含义，强调 2 号槽存原始 sp，规定 CSR 先恢复、sp 最后恢复，禁止硬编码指令宽度、二次分配栈和在宏内返回。入口规范要求把当前 sp 作为 a0，用 call 调用 trap，并保持 frame 栈位置。
+## 3. Trap上下文恢复与入口
 
-Prompt 限定实际修改 `trapentry.S` 中两个目标位置，保留 SAVE_ALL、frame 布局、__trapret 与 sret，不扩展到其他函数重构，并指定署名 `lab3: 2414067`。这些边界避免 AI 用错误的“全部寄存器等价恢复”或“强制返回用户态”模板。
+### 3.1 Spec和Prompt
+
+Spec要求RESTORE_ALL严格对应给定SAVE_ALL布局：0～31号槽为GPR，32～35为status/epc/badvaddr/cause；先借临时GPR恢复sstatus、sepc，再恢复GPR，sp最后恢复。恢复宏不另行分配栈，不在宏中返回，不强行清SPP。入口把当前frame地址放入a0后call trap，返回到__trapret并sret。
+
+Prompt的关键约束是：“仅补RESTORE_ALL和__alltraps目标位置；保留SAVE_ALL、结构体和trap签名；所有偏移使用REGBYTES及LOAD；x2从2号槽最后恢复；恢复的epc必须重新读取frame；署名lab3: 2414067。”原提示词文件保存在仓库外OS/lab3，报告独立说明其约束。
 
 ### 3.2 核心实现
 
-`SAVE_ALL` 按指导书保存通用寄存器及 sstatus/sepc/stval/scause。`RESTORE_ALL` 使用 s0/s1 临时读取 32/33 号槽并写回 CSR，再恢复 x1 和 x3～x31，最后通过 2 号槽恢复 x2。x0 恒为零，无须恢复；诊断用 stval/scause 无须回写。全部偏移和访问宽度用 REGBYTES 与 LOAD 表达。
+SAVE_ALL在sp减小前用sscratch暂存旧sp。普通GPR先按编号槽位保存，再借已保存的s0～s4读取旧sp与CSR，写入2号及32～35号槽。CSR不能作为sd/sw的数据源，需先用csrr读入GPR，再存到内存。
 
-`__alltraps` 保存后执行 `mv a0, sp` 和 `call trap`。调用返回地址正好位于 __trapret，恢复时再次读取 frame 的 epc，可见 C handler 对返回位置的更新。最终 sret 按保存的 SPP 返回权限，并按 SPIE 恢复 SIE，不在汇编恢复宏里手工清改这两个位。
+RESTORE_ALL先用s0/s1读取32/33号槽，写回sstatus/sepc，再加载x1、x3～x31，最后加载x2。最后一步既恢复旧栈顶，也释放当前frame；不能再额外加288。x0恒为0，不需要恢复；scause/stval是诊断状态，不是sret需要的返回输入。
 
-### 3.3 验证方法与结果
+__alltraps执行SAVE_ALL后，a0=sp并call trap。C调用可破坏当前caller-saved寄存器，因为原值已保存在frame里。C返回后直接落入__trapret，RESTORE_ALL读取handler修改后的epc，再由sret完成PC及权限/中断状态转换。
 
-执行 `make -j4` 编译，通过；执行 `make grade`，自行编写的 QEMU/GDB 验证通过。证据位于 `../code/evidence/p1/`，包括 build.log、qemu.log、gdb.log、environment.json、summary.json 和本地指导书正文快照。
+汇编中的.text/.macro/.endm/.globl/.align是汇编器指令，在汇编阶段管理代码段、宏、符号和对齐；mv/call是会展开为机器指令的伪指令。详细中文注释保留在trapentry.S。
 
-| 实测项目 | 结果 |
-| --- | --- |
-| 真实 32 位 ebreak 和 16 位 c.ebreak 进入 S 态 Trap | 两种均通过 |
-| __alltraps 四字节对齐、stvec 指向入口 | 通过 |
-| frame 大小、32 个 GPR 及 4 个 CSR 字段 | 通过 |
-| a0 指向 frame、调用前后 frame 的 sp 一致 | 通过 |
-| 人为打乱寄存器后恢复全部 GPR 和原 sp | 通过 |
-| 从 frame 重读更新后的 epc/status | 通过 |
-| sret 返回到 epc 指定地址、执行规定的状态转换 | 通过 |
-| 继承的默认 best-fit 内存自测 | 本次启动输出全部通过 |
+## 4. 中断与时钟处理
 
-为保持 P3 空实现，测试由 GDB 临时更新 frame 的 epc/status；不修改生产 handler，也不修改镜像文件。因此验证说明 P1 正确读取了修改后的 frame，不代表已完成 P3 的指令长度识别逻辑。该脚本不是课程官方评分程序。
+### 4.1 Spec和Prompt
 
-### 3.4 实际遇到的问题与解决
+Spec要求先去掉scause最高中断标志，IRQ_S_TIMER分支每次先重设事件再增加ticks；每100次调用原print_ticks，累计输出达到阈值后请求关机。其他已知原因只报告，未知原因输出原因码和原框架frame。所有分支不得修改保存的frame，不主动开中断。
 
-1. 基线中不存在题目引用的 Trap 框架。复制 lab2 后按照离线指导书补齐必要框架，并在 README 明示源码获取失败和本地补充的范围。P2/P3 保留空函数，P1 不启动定时器。
-2. 首次 GDB 验证在 sret 的软件单步处超时，QEMU 已进入非预期后续代码；逐条定位显示前面的所有恢复指令已执行。GDB 的 RISC-V 软件单步未可靠推导 sret 的目的地址。改为在 frame 指定的返回地址设置硬件断点并 continue，真实执行 sret 后停下，再检查 PC 与 sstatus，两个用例均通过。原失败记录保存在 `gdb-software-step-timeout.log`。
+Prompt关键要求：“仅实现interrupt_handler，保护trap.c已有函数；复用clock_set_next_event、ticks和print_ticks；以实际输出行数计数，先输出后关机，关机标志在调用前设置；保持epc/status/cause不变；署名lab3: 2411520。”
 
-未观察到 P1 生成代码的寄存器恢复错误，不虚构其他 AI 生成 bug。测试和框架集成问题如实记录。
+### 4.2 核心实现
 
-## 4. P2：时钟中断（待实施）
+uintptr_t为64位无符号类型。对 `[I c62 ... c0]` 左移1位得到 `[c62 ... c0 0]`，最高I被丢弃；再逻辑右移得到 `[0 c62 ... c0]`。因此 `(tf->cause << 1) >> 1` 清掉中断标志，保留原因码。例如 `0x8000000000000005 → 0xa → 0x5`。第二步不能找回已经丢掉的最高位，这不是可逆乘除运算。
 
-署名要求 `lab3: 2411520`，原文见提示词 P2。待实现 IRQ_S_TIMER 事件重设、ticks 计数、每 TICK_NUM 输出、独立输出行计数与一次性关机，以及其他中断提示和未知原因兜底。当前没有 P2 实测结论。
+S态时钟分支调用clock_set_next_event预约下一事件，ticks自增，逢100输出。printed_lines记录实际输出行数，shutdown_requested在SBI调用前置位，避免接口意外返回后重复请求。原始包和指导书均未定义SHUTDOWN_AFTER数值，本项目沿用10行，即正常连续计数1000次后关机。
 
-## 5. P3：异常处理（待实施）
+其他13种已定义原因只分类报告。未知原因先输出 `Unknown interrupt: cause ...` 再print_trapframe，以匹配原始测试。真实外设的确认、清除操作不属于当前分支功能。
 
-署名要求 `lab3: 2412267`，原文见提示词 P3。待实现非法指令与断点输出、按低两位识别 2/4 字节并前移 epc，以及其他异常不修改 frame 的兜底。当前没有 P3 实测结论。
+## 5. 非法指令与断点异常
 
-## 6. 知识点与原理对应
+### 5.1 Spec和Prompt
 
-上下文保护对应异步事件发生时的透明执行；frame 对应内核对 CPU 状态的结构化表达；stvec 与 C 分发对应统一入口的中断组织；sstatus/sret 对应特权与中断状态恢复；epc 对应异常返回与指令重启。详细含义、关系及差异见 `../知识点梳理.md`。
+Spec把异常分成两类：非法指令和断点输出原位置并按编码长度推进epc；其他原因仅调用print_trapframe，不取指、不改现场。需要处理的指令取其前16位，低两位非11加2，是11按本实验16/32位范围加4。
 
-本阶段的上下文保存不等于完整进程切换：没有选择新任务、切换地址空间或维护 PCB。统一入口也不等于向量模式。本实验的内核栈处理不提供完整用户态双栈切换。
+Prompt关键要求：“仅实现exception_handler；不得改变interrupt_handler和其他固定函数；仅允许修改frame.epc，禁止直接改sepc、改变权限或开中断；输出故障原地址；未知原因不读取epc；署名lab3: 2412267。”取得原始评分脚本后，将输出进一步约束为 `Illegal instruction at 0x...` 和 `Breakpoint at 0x...`。
 
-## 7. 重要但未覆盖的 OS 原理
+### 5.2 核心实现
 
-进程调度、系统调用与参数检查、内存保护和完整缺页处理、多核同步、设备中断确认、浮点/向量状态管理及嵌套 Trap 栈保护。待 P2/P3 结束后补充最终验证结果与实验体会。
+switch选定两类异常的名称，先输出处理前epc，再以volatile uint16_t读取前缀。半字读取能处理仅2字节对齐的指令地址，无需强制32位访存。handler只修改frame.epc，统一恢复宏再把它写回sepc。直接修改硬件sepc可能被后续恢复旧frame覆盖，因此不采用该做法。
+
+其他原因保持frame不变并诊断。它们原址返回后若条件持续，可能重新陷入；这不构成通用异常恢复。当前未实现48位及更长指令的完整解码器，也未为不可读故障指令实现通用安全取指。
+
+## 6. 中断保护与基础框架修补
+
+原始sync.h的local_intr_save保存进入前SIE，若原本开启则关闭；local_intr_restore只在保存值为真时开启。PMM的alloc_pages、free_pages和nr_free_pages都在这一保护内调用后端，避免同一hart被中断后重入共享链表。
+
+不能简单用intr_disable/无条件intr_enable替代：在Trap或外层临界区内调用时，原状态就是关闭，退出后也应保持关闭。嵌套时外层保存1、内层保存0，先退出内层仍关闭，外层退出才开启。这是本地中断互斥，不是多hart锁；原始实现不改，增加中文解释。
+
+entry.S增加根项2的低地址恒等映射，与根项511的高地址映射指向同一物理区间。satp生效后PC不会自动加虚实偏移，需要低地址映射继续执行刷新与跳转，再进入高地址C内核。
+
+原始Makefile和grade.sh使用设备加载器。本机固件在该命令下报告Next Address=0，未进入内核。替换为-kernel后能正确交接。grade.sh只改这一启动参数；原始inject.py、test_lab3三份文件、评分断言、分数与时限全部保留。Makefile另增加GDB兼容选择、独立临时评分副本和日志保存。
+
+trap.c中已有的print_ticks、idt_init、trap_in_kernel、print_trapframe、print_regs、trap_dispatch和trap逐一核对保持原样；trap.h仅加注释，不改变布局。原框架按%08x显示诊断字段，RV64完整寄存器值可通过GDB查看。
+
+## 7. 实验验证与结果
+
+在code目录执行make -j4、make qemu、make grade。原始评分在临时副本注入测试，不改当前源码或常规镜像。
+
+| 验证项目 | 实际结果 | 证据 |
+| --- | --- | --- |
+| 原始寄存器恢复与断点返回 | 35/35 | baseline-integration/.qemu.GRADE_LAB3_CONTEXT.out |
+| 原始非法指令、软件中断与未知原因输出 | 25/25 | baseline-integration/.qemu.GRADE_LAB3_ILLEGAL.out |
+| 原始持续时钟，ticks达到200 | 40/40 | baseline-integration/.qemu.GRADE_LAB3_TIMER.out |
+| 原始评分总分 | Total Score: 100/100 | baseline-integration/grade.log |
+| 正常内核启动至关机 | First-Fit检查通过，10行100 ticks，QEMU退出0 | baseline-integration/qemu-normal.log |
+| 补充First-Fit真实验证 | 全通过 | baseline-integration/supplemental/summary.json |
+| 补充Best-Fit真实验证 | 全通过，原Best-Fit检查6/6 | baseline-integration/best-fit/summary.json |
+| 与原始包对照 | 无缺失，46文件原样；保护函数与测试核对通过 | baseline-integration/source-comparison.json |
+
+上表路径均相对于 `../code/evidence/`。可选执行 `python3 tools/verify_integration.py` 及加 `--best-fit` 的版本重现补充验证。
+
+补充验证在临时副本中真实运行CSR和分配器，通过代理确认后端调用期间SIE关闭，覆盖进入前开启/关闭、失败分配和嵌套临界区；前后空闲页数一致。对两类异常×四种低位编码进行8次直接调用，检查只改变epc；对15种其他原因将epc设为1，确认不取指也不改frame。
+
+GDB另在运行内存中注入0x0000、非法写只读cycle CSR、c.ebreak、ebreak，四次真实硬件异常原因分别为2/2/3/3，返回增量2/4/2/4。在trap入口与__trapret比较frame，确认仅epc变化，sret后全部32个GPR与保存值一致。调试器不替handler计算epc。最后恢复原启动现场，运行至ticks=1000并实际SBI关机，两种内存配置均退出0。
+
+## 8. AI生成与集成中实际遇到的问题
+
+1. **框架补齐不完整。** 最初把lab2代码直接继承，未引入sync.h与PMM中断保护，且诊断函数和输出格式与原始框架不同。此前内存检查在开中断前执行，时钟也不分配页，因而测试没有暴露缺失。本轮改用提供的原始包，补齐空白，并新增真实SIE状态验证。
+2. **原始启动参数不适配本机。** 第一次原始评分0/100，串口只停留在固件，Next Address=0；改为-kernel后全部通过。初次失败日志保存在baseline-integration/initial-loader-failure，不通过修改断言绕过失败。
+3. **开启分页后的取指衔接。** 保留此前已经确认必要的恒等映射修复，使当前低地址PC在satp生效后有效，再跳到高地址内核。
+4. **GDB软件单步sret曾停滞。** 历史调试改为在sepc目标设置硬件断点，让sret实际执行后检查返回结果；当前补充测试和手动说明沿用该方式。
+
+没有发现本轮Trap恢复和handler在原始评分及补充测试中的新失败；不把测试通过扩大解释为所有OS机制均已实现。
+
+## 9. 知识点与OS原理对应
+
+| 实验机制 | 原理与联系 | 差异或边界 |
+| --- | --- | --- |
+| SAVE_ALL/RESTORE_ALL | 上下文保护与恢复 | 当前返回同一执行流，不是调度另一个进程。 |
+| trapframe及ABI调用 | 内核数据布局、汇编与C接口 | 字段顺序约束固定偏移，sp还受基址寻址限制。 |
+| stvec Direct与软件分派 | 中断向量组织 | 单一硬件入口，不是每类原因独立向量。 |
+| sstatus/sret | 权限及中断状态转换 | Trap可由S态进入S态，不能强行按用户态返回。 |
+| sepc与指令长度 | 同步异常恢复 | 本实验选择报告后跳过；真实OS还可能终止进程或模拟指令。 |
+| 定时器重设与ticks | 事件驱动、软件计时 | SBI单次预约；现在+间隔的实现存在开销与漂移，ticks不是严格墙钟。 |
+| SIE、STIE | 分层中断屏蔽 | 全局使能与特定来源使能不同，均需满足。 |
+| PMM中断保护 | 临界区互斥与状态恢复 | 仅保护本地hart，不能代替多核锁；volatile也不能替代同步。 |
+| page_init与空闲链表 | 内存描述、分配及碎片 | Page数组消耗实际物理页；最佳适应不保证消除外碎片。 |
+
+## 10. 重要但本实验未覆盖的原理
+
+进程调度与PCB、系统调用和参数检查、用户/内核地址隔离、完整缺页处理、跨hart锁与内存顺序、驱动级中断确认、浮点/向量状态保护、完整用户态双栈切换和嵌套Trap栈管理。当前时钟没有驱动调度器，未知异常也没有通用恢复策略。
+
+## 11. 实验体会
+
+框架一致性本身属于正确性的一部分。自建测试只能证明覆盖到的行为，不能替代原始代码核对和课程测试。此次同时保留基线对照、原始评分和真实边界验证：既检查输出契约，也检查寄存器、frame和中断状态，才能解释“为什么能正常返回并持续执行”。个人操作、提示词和答辩资料仍位于仓库外OS/lab3。

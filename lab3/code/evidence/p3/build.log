@@ -1,0 +1,3 @@
++ cc kern/trap/trap.c
++ ld bin/best_fit/0/kernel
+riscv64-unknown-elf-objcopy bin/best_fit/0/kernel --strip-all -O binary bin/best_fit/0/ucore.img

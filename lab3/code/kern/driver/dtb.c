@@ -1,117 +1,150 @@
-/* lab2: 2414067 - bounded FDT v17 parser for QEMU's contiguous DRAM bank. */
 #include <dtb.h>
-#include <assert.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
+#include <defs.h>
 #include <memlayout.h>
 
-static struct memory_info memory;
-static uint32_t be32(const unsigned char *p) {
-    return ((uint32_t)p[0]<<24)|((uint32_t)p[1]<<16)|((uint32_t)p[2]<<8)|p[3];
-}
-static bool region(size_t offset, size_t length, size_t total) {
-    return offset <= total && length <= total-offset;
-}
-static bool terminated(const unsigned char *p, size_t n) {
-    for (size_t i=0; i<n; ++i) if (!p[i]) return 1;
-    return 0;
-}
-static uint64_t cells(const unsigned char *p, unsigned n) {
-    return n==1 ? be32(p) : ((uint64_t)be32(p)<<32)|be32(p+4);
-}
-struct node {
-    unsigned ac, sc, parent_ac, parent_sc;
-    bool is_memory;
-    const unsigned char *reg;
-    size_t reglen;
+// 设备树头部结构
+struct fdt_header {
+    uint32_t magic;          // 0xd00dfeed (big-endian)
+    uint32_t totalsize;      // 整个DTB的大小
+    uint32_t off_dt_struct;  // 结构体部分的偏移
+    uint32_t off_dt_strings; // 字符串部分的偏移
+    uint32_t off_mem_rsvmap; // 内存保留映射的偏移
+    uint32_t version;        // DTB版本
+    uint32_t last_comp_version; // 最后兼容版本
+    uint32_t boot_cpuid_phys;   // 启动CPU的物理ID
+    uint32_t size_dt_strings;   // 字符串部分大小
+    uint32_t size_dt_struct;    // 结构体部分大小
 };
-int dtb_parse(const void *blob, size_t available, struct memory_info *out) {
-    const unsigned char *b=blob;
-    if (!b || !out || available<40 || be32(b)!=0xd00dfeed) return -1;
-    size_t total=be32(b+4), so=be32(b+8), to=be32(b+12);
-    size_t ro=be32(b+16), ts=be32(b+32), ss=be32(b+36);
-    if (total<40 || total>available || be32(b+20)<17 || be32(b+24)>17 ||
-        so<40 || to<40 || ro<40 || (so&3) || (ro&7) ||
-        !region(so,ss,total) || !region(to,ts,total) ||
-        !(so+ss<=to || to+ts<=so)) return -1;
-    /* Validate the reservation-map terminator, without retaining pointers. */
-    size_t r=ro;
-    for (;;) {
-        if (!region(r,16,total) || !(r+16<=so || r>=so+ss) ||
-            !(r+16<=to || r>=to+ts)) return -1;
-        if (!cells(b+r,2) && !cells(b+r+8,2)) break;
-        r+=16;
-    }
-    struct node stack[16];
-    unsigned depth=0;
-    bool root_seen=0, root_done=0, found=0;
-    struct memory_info result={0,0};
-    size_t pos=so, end=so+ss;
-    while (region(pos,4,end)) {
-        uint32_t token=be32(b+pos); pos+=4;
-        if (token==1) { /* FDT_BEGIN_NODE */
-            if (depth==16 || root_done || !terminated(b+pos,end-pos)) return -1;
-            const char *name=(const char *)(b+pos);
-            if (!depth && (root_seen || *name)) return -1;
-            struct node *n=&stack[depth];
-            n->ac=2; n->sc=1; n->reg=NULL; n->reglen=0;
-            n->parent_ac=depth ? stack[depth-1].ac : 2;
-            n->parent_sc=depth ? stack[depth-1].sc : 1;
-            n->is_memory=!strcmp(name,"memory") || !strncmp(name,"memory@",7);
-            pos=ROUNDUP(pos+strlen(name)+1,4);
-            if (pos>end) return -1;
-            ++depth; root_seen=1;
-        } else if (token==2) { /* FDT_END_NODE */
-            if (!depth) return -1;
-            struct node *n=&stack[--depth];
-            if (n->is_memory) {
-                unsigned ac=n->parent_ac, sc=n->parent_sc;
-                if (!n->reg || ac<1 || ac>2 || sc<1 || sc>2 ||
-                    !n->reglen || n->reglen%((ac+sc)*4)) return -1;
-                for (size_t i=0;i<n->reglen;i+=(ac+sc)*4) {
-                    uint64_t base=cells(n->reg+i,ac), size=cells(n->reg+i+ac*4,sc);
-                    if (!size || base>UINT64_MAX-size) return -1;
-                    if (!found) {result.base=base;result.size=size;found=1;}
-                    else if (result.base+result.size==base) result.size+=size;
-                    else return -1; /* Deliberately reject discontiguous banks. */
+
+// FDT token定义
+#define FDT_BEGIN_NODE  0x00000001
+#define FDT_END_NODE    0x00000002
+#define FDT_PROP        0x00000003
+#define FDT_NOP         0x00000004
+#define FDT_END         0x00000009
+
+// 字节序转换函数
+static uint32_t fdt32_to_cpu(uint32_t x) {
+    return ((x & 0xff) << 24) | (((x >> 8) & 0xff) << 16) | 
+           (((x >> 16) & 0xff) << 8) | ((x >> 24) & 0xff);
+}
+
+static uint64_t fdt64_to_cpu(uint64_t x) {
+    return ((uint64_t)fdt32_to_cpu(x & 0xffffffff) << 32) | 
+           fdt32_to_cpu(x >> 32);
+}
+
+// 简化的内存信息提取函数
+static int extract_memory_info(uintptr_t dtb_vaddr, const struct fdt_header *header, 
+                              uint64_t *mem_base, uint64_t *mem_size) {
+    uint32_t struct_offset = fdt32_to_cpu(header->off_dt_struct);
+    uint32_t strings_offset = fdt32_to_cpu(header->off_dt_strings);
+    
+    const char *strings_base = (const char *)(dtb_vaddr + strings_offset);
+    const uint32_t *struct_ptr = (const uint32_t *)(dtb_vaddr + struct_offset);
+    
+    int in_memory_node = 0;
+    
+    while (1) {
+        uint32_t token = fdt32_to_cpu(*struct_ptr++);
+        
+        switch (token) {
+            case FDT_BEGIN_NODE: {
+                const char *name = (const char *)struct_ptr;
+                int name_len = strlen(name);
+                
+                // 检查是否是memory节点
+                if (strncmp(name, "memory", 6) == 0) {
+                    in_memory_node = 1;
                 }
+                
+                // 跳过节点名（4字节对齐）
+                struct_ptr = (const uint32_t *)(((uintptr_t)struct_ptr + name_len + 4) & ~3);
+                break;
             }
-            if (!depth) root_done=1;
-        } else if (token==3) { /* FDT_PROP */
-            if (!depth || !region(pos,8,end)) return -1;
-            size_t len=be32(b+pos), nameoff=be32(b+pos+4); pos+=8;
-            if (!region(pos,len,end) || nameoff>=ts ||
-                !terminated(b+to+nameoff,ts-nameoff)) return -1;
-            const char *name=(const char *)(b+to+nameoff);
-            struct node *n=&stack[depth-1];
-            if (!strcmp(name,"#address-cells") || !strcmp(name,"#size-cells")) {
-                if (len!=4) return -1;
-                if (!strcmp(name,"#address-cells")) n->ac=be32(b+pos);
-                else n->sc=be32(b+pos);
-            } else if (!strcmp(name,"reg")) {
-                if (n->reg) return -1;
-                n->reg=b+pos; n->reglen=len;
-            } else if (!strcmp(name,"device_type") && len==7 &&
-                       !memcmp(b+pos,"memory",7)) n->is_memory=1;
-            pos=ROUNDUP(pos+len,4);
-            if (pos>end) return -1;
-        } else if (token==4) continue; /* FDT_NOP */
-        else if (token==9) {
-            if (depth || !root_done || !found) return -1;
-            *out=result; return 0;
-        } else return -1;
+            
+            case FDT_END_NODE:
+                in_memory_node = 0;
+                break;
+                
+            case FDT_PROP: {
+                uint32_t prop_len = fdt32_to_cpu(*struct_ptr++);
+                uint32_t prop_nameoff = fdt32_to_cpu(*struct_ptr++);
+                const char *prop_name = strings_base + prop_nameoff;
+                const void *prop_data = struct_ptr;
+                
+                // 在memory节点中查找reg属性
+                if (in_memory_node && strcmp(prop_name, "reg") == 0 && prop_len >= 16) {
+                    const uint64_t *reg_data = (const uint64_t *)prop_data;
+                    *mem_base = fdt64_to_cpu(reg_data[0]);
+                    *mem_size = fdt64_to_cpu(reg_data[1]);
+                    return 0; // 成功找到
+                }
+                
+                // 跳过属性数据（4字节对齐）
+                struct_ptr = (const uint32_t *)(((uintptr_t)struct_ptr + prop_len + 3) & ~3);
+                break;
+            }
+            
+            case FDT_NOP:
+                break;
+                
+            case FDT_END:
+                return -1; // 没有找到
+                
+            default:
+                return -1; // 错误
+        }
     }
-    return -1;
 }
-void dtb_init(uintptr_t hartid, uintptr_t dtb_pa) {
-    /* Physical accessibility is a platform precondition before reading header. */
-    const uintptr_t platform_end=DRAM_BASE+0x40000000ULL;
-    assert(dtb_pa>=DRAM_BASE && dtb_pa<=platform_end-40 && !(dtb_pa&7));
-    size_t available=platform_end-dtb_pa;
-    if (available>0x200000) available=0x200000;
-    assert(dtb_parse((void *)(dtb_pa+KERNEL_VA_PA_OFFSET),available,&memory)==0);
-    cprintf("DTB: hart=%lu pa=0x%016lx RAM=[0x%016lx,0x%016lx) size=%lu MiB\n",
-            hartid,dtb_pa,memory.base,memory.base+memory.size,memory.size>>20);
+
+// 保存解析出的系统物理内存信息
+static uint64_t memory_base = 0;
+static uint64_t memory_size = 0;
+
+void dtb_init(void) {
+    cprintf("DTB Init\n");
+    cprintf("HartID: %ld\n", boot_hartid);
+    cprintf("DTB Address: 0x%lx\n", boot_dtb);
+    
+    if (boot_dtb == 0) {
+        cprintf("Error: DTB address is null\n");
+        return;
+    }
+    
+    // 转换为虚拟地址
+    uintptr_t dtb_vaddr = boot_dtb + PHYSICAL_MEMORY_OFFSET;
+    const struct fdt_header *header = (const struct fdt_header *)dtb_vaddr;
+    
+    // 验证DTB
+    uint32_t magic = fdt32_to_cpu(header->magic);
+    if (magic != 0xd00dfeed) {
+        cprintf("Error: Invalid DTB magic number: 0x%x\n", magic);
+        return;
+    }
+    
+    // 提取内存信息
+    uint64_t mem_base, mem_size;
+    if (extract_memory_info(dtb_vaddr, header, &mem_base, &mem_size) == 0) {
+        cprintf("Physical Memory from DTB:\n");
+        cprintf("  Base: 0x%016lx\n", mem_base);
+        cprintf("  Size: 0x%016lx (%ld MB)\n", mem_size, mem_size / (1024 * 1024));
+        cprintf("  End:  0x%016lx\n", mem_base + mem_size - 1);
+        // 保存到全局变量，供 PMM 查询
+        memory_base = mem_base;
+        memory_size = mem_size;
+    } else {
+        cprintf("Warning: Could not extract memory info from DTB\n");
+    }
+    cprintf("DTB init completed\n");
 }
-uintptr_t get_memory_base(void) {return memory.base;}
-size_t get_memory_size(void) {return memory.size;}
+
+uint64_t get_memory_base(void) {
+    return memory_base;
+}
+
+uint64_t get_memory_size(void) {
+    return memory_size;
+}

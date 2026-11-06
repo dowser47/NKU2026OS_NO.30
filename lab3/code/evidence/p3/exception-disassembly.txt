@@ -1,0 +1,45 @@
+
+bin/best_fit/0/kernel:     file format elf64-littleriscv
+
+
+Disassembly of section .text:
+
+ffffffffc0200c52 <exception_handler>:
+ffffffffc0200c52:	11853783          	ld	a5,280(a0)
+ffffffffc0200c56:	1141                	addi	sp,sp,-16
+ffffffffc0200c58:	e022                	sd	s0,0(sp)
+ffffffffc0200c5a:	e406                	sd	ra,8(sp)
+ffffffffc0200c5c:	4709                	li	a4,2
+ffffffffc0200c5e:	842a                	mv	s0,a0
+ffffffffc0200c60:	04e78c63          	beq	a5,a4,ffffffffc0200cb8 <exception_handler+0x66>
+ffffffffc0200c64:	470d                	li	a4,3
+ffffffffc0200c66:	04e79563          	bne	a5,a4,ffffffffc0200cb0 <exception_handler+0x5e>
+ffffffffc0200c6a:	00003597          	auipc	a1,0x3
+ffffffffc0200c6e:	c7658593          	addi	a1,a1,-906 # ffffffffc02038e0 <memcmp+0x37c>
+ffffffffc0200c72:	00003517          	auipc	a0,0x3
+ffffffffc0200c76:	c7e50513          	addi	a0,a0,-898 # ffffffffc02038f0 <memcmp+0x38c>
+ffffffffc0200c7a:	c4aff0ef          	jal	ffffffffc02000c4 <cprintf>
+ffffffffc0200c7e:	10843583          	ld	a1,264(s0)
+ffffffffc0200c82:	00003517          	auipc	a0,0x3
+ffffffffc0200c86:	c8650513          	addi	a0,a0,-890 # ffffffffc0203908 <memcmp+0x3a4>
+ffffffffc0200c8a:	c3aff0ef          	jal	ffffffffc02000c4 <cprintf>
+ffffffffc0200c8e:	10843783          	ld	a5,264(s0)
+ffffffffc0200c92:	460d                	li	a2,3
+ffffffffc0200c94:	4689                	li	a3,2
+ffffffffc0200c96:	0007d703          	lhu	a4,0(a5)
+ffffffffc0200c9a:	8b0d                	andi	a4,a4,3
+ffffffffc0200c9c:	00c71363          	bne	a4,a2,ffffffffc0200ca2 <exception_handler+0x50>
+ffffffffc0200ca0:	4691                	li	a3,4
+ffffffffc0200ca2:	97b6                	add	a5,a5,a3
+ffffffffc0200ca4:	60a2                	ld	ra,8(sp)
+ffffffffc0200ca6:	10f43423          	sd	a5,264(s0)
+ffffffffc0200caa:	6402                	ld	s0,0(sp)
+ffffffffc0200cac:	0141                	addi	sp,sp,16
+ffffffffc0200cae:	8082                	ret
+ffffffffc0200cb0:	6402                	ld	s0,0(sp)
+ffffffffc0200cb2:	60a2                	ld	ra,8(sp)
+ffffffffc0200cb4:	0141                	addi	sp,sp,16
+ffffffffc0200cb6:	bbed                	j	ffffffffc0200ab0 <print_trapframe>
+ffffffffc0200cb8:	00003597          	auipc	a1,0x3
+ffffffffc0200cbc:	c1058593          	addi	a1,a1,-1008 # ffffffffc02038c8 <memcmp+0x364>
+ffffffffc0200cc0:	bf4d                	j	ffffffffc0200c72 <exception_handler+0x20>

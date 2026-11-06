@@ -1,0 +1,121 @@
+0x0000000000001000 in ?? ()
+Hardware assisted breakpoint 1 at 0xffffffffc0200a9e: file kern/trap/trap.c, line 23.
+
+Breakpoint 1, idt_init () at kern/trap/trap.c:23
+23	    write_csr(sscratch, 0);
+kern_init (hartid=0, dtb_pa=2279604224) at kern/init/init.c:24
+24	    clock_init();
+CASE 4 start 0xffffffffc0200080
+Hardware assisted breakpoint 2 at 0xffffffffc0200c60: file kern/trap/trapentry.S, line 93.
+
+Breakpoint 2, __alltraps () at kern/trap/trapentry.S:93
+93	    SAVE_ALL
+ENTRY 0xffffffffc0200c60
+Hardware assisted breakpoint 3 at 0xffffffffc0200c52: file kern/trap/trap.c, line 83.
+
+Breakpoint 3, trap_dispatch (tf=0xffffffffc0206ec0) at kern/trap/trap.c:83
+83	    if ((intptr_t)tf->cause < 0) {
+TRAP 0xffffffffc0200c52
+Hardware assisted breakpoint 4 at 0xffffffffc0200cc8: file kern/trap/trapentry.S, line 100.
+
+Breakpoint 4, __trapret () at kern/trap/trapentry.S:100
+100	    RESTORE_ALL
+RESTORE 0xffffffffc0200cc8
+0xffffffffc0200cca	100	    RESTORE_ALL
+0xffffffffc0200ccc	100	    RESTORE_ALL
+0xffffffffc0200cd0	100	    RESTORE_ALL
+0xffffffffc0200cd4	100	    RESTORE_ALL
+0xffffffffc0200cd6	100	    RESTORE_ALL
+0xffffffffc0200cd8	100	    RESTORE_ALL
+0xffffffffc0200cda	100	    RESTORE_ALL
+0xffffffffc0200cdc	100	    RESTORE_ALL
+0xffffffffc0200cde	100	    RESTORE_ALL
+0xffffffffc0200ce0	100	    RESTORE_ALL
+0xffffffffc0200ce2	100	    RESTORE_ALL
+0xffffffffc0200ce4	100	    RESTORE_ALL
+0xffffffffc0200ce6	100	    RESTORE_ALL
+0xffffffffc0200ce8	100	    RESTORE_ALL
+0xffffffffc0200cea	100	    RESTORE_ALL
+0xffffffffc0200cec	100	    RESTORE_ALL
+0xffffffffc0200cee	100	    RESTORE_ALL
+0xffffffffc0200cf0	100	    RESTORE_ALL
+0xffffffffc0200cf2	100	    RESTORE_ALL
+0xffffffffc0200cf4	100	    RESTORE_ALL
+0xffffffffc0200cf6	100	    RESTORE_ALL
+0xffffffffc0200cf8	100	    RESTORE_ALL
+0xffffffffc0200cfa	100	    RESTORE_ALL
+0xffffffffc0200cfc	100	    RESTORE_ALL
+0xffffffffc0200cfe	100	    RESTORE_ALL
+0xffffffffc0200d00	100	    RESTORE_ALL
+0xffffffffc0200d02	100	    RESTORE_ALL
+0xffffffffc0200d04	100	    RESTORE_ALL
+0xffffffffc0200d06	100	    RESTORE_ALL
+0xffffffffc0200d08	100	    RESTORE_ALL
+0xffffffffc0200d0a	100	    RESTORE_ALL
+0xffffffffc0200d0c	100	    RESTORE_ALL
+0xffffffffc0200d0e	100	    RESTORE_ALL
+0xffffffffc0200d10	100	    RESTORE_ALL
+__trapret () at kern/trap/trapentry.S:102
+102	    sret
+Hardware assisted breakpoint 5 at 0xffffffffc0200084: file kern/init/init.c, line 25.
+
+Breakpoint 5, kern_init (hartid=305398792, dtb_pa=305398793) at kern/init/init.c:25
+25	    intr_enable();
+CASE 2 start 0xffffffffc0200084
+Hardware assisted breakpoint 6 at 0xffffffffc0200c60: file kern/trap/trapentry.S, line 93.
+
+Breakpoint 6, __alltraps () at kern/trap/trapentry.S:93
+93	    SAVE_ALL
+ENTRY 0xffffffffc0200c60
+Hardware assisted breakpoint 7 at 0xffffffffc0200c52: file kern/trap/trap.c, line 83.
+
+Breakpoint 7, trap_dispatch (tf=0xffffffffc0206ec0) at kern/trap/trap.c:83
+83	    if ((intptr_t)tf->cause < 0) {
+TRAP 0xffffffffc0200c52
+Hardware assisted breakpoint 8 at 0xffffffffc0200cc8: file kern/trap/trapentry.S, line 100.
+
+Breakpoint 8, __trapret () at kern/trap/trapentry.S:100
+100	    RESTORE_ALL
+RESTORE 0xffffffffc0200cc8
+0xffffffffc0200cca	100	    RESTORE_ALL
+0xffffffffc0200ccc	100	    RESTORE_ALL
+0xffffffffc0200cd0	100	    RESTORE_ALL
+0xffffffffc0200cd4	100	    RESTORE_ALL
+0xffffffffc0200cd6	100	    RESTORE_ALL
+0xffffffffc0200cd8	100	    RESTORE_ALL
+0xffffffffc0200cda	100	    RESTORE_ALL
+0xffffffffc0200cdc	100	    RESTORE_ALL
+0xffffffffc0200cde	100	    RESTORE_ALL
+0xffffffffc0200ce0	100	    RESTORE_ALL
+0xffffffffc0200ce2	100	    RESTORE_ALL
+0xffffffffc0200ce4	100	    RESTORE_ALL
+0xffffffffc0200ce6	100	    RESTORE_ALL
+0xffffffffc0200ce8	100	    RESTORE_ALL
+0xffffffffc0200cea	100	    RESTORE_ALL
+0xffffffffc0200cec	100	    RESTORE_ALL
+0xffffffffc0200cee	100	    RESTORE_ALL
+0xffffffffc0200cf0	100	    RESTORE_ALL
+0xffffffffc0200cf2	100	    RESTORE_ALL
+0xffffffffc0200cf4	100	    RESTORE_ALL
+0xffffffffc0200cf6	100	    RESTORE_ALL
+0xffffffffc0200cf8	100	    RESTORE_ALL
+0xffffffffc0200cfa	100	    RESTORE_ALL
+0xffffffffc0200cfc	100	    RESTORE_ALL
+0xffffffffc0200cfe	100	    RESTORE_ALL
+0xffffffffc0200d00	100	    RESTORE_ALL
+0xffffffffc0200d02	100	    RESTORE_ALL
+0xffffffffc0200d04	100	    RESTORE_ALL
+0xffffffffc0200d06	100	    RESTORE_ALL
+0xffffffffc0200d08	100	    RESTORE_ALL
+0xffffffffc0200d0a	100	    RESTORE_ALL
+0xffffffffc0200d0c	100	    RESTORE_ALL
+0xffffffffc0200d0e	100	    RESTORE_ALL
+0xffffffffc0200d10	100	    RESTORE_ALL
+__trapret () at kern/trap/trapentry.S:102
+102	    sret
+Hardware assisted breakpoint 9 at 0xffffffffc0200086: file kern/init/init.c, line 25.
+
+Breakpoint 9, 0xffffffffc0200086 in kern_init (hartid=305398280, dtb_pa=305398281) at kern/init/init.c:25
+25	    intr_enable();
+P1_RESULTS=[{"frame_bytes": 288, "instruction_bytes": 4, "restored_gprs": 32, "saved_gprs": 32, "status_restored": true, "updated_epc_used": true}, {"frame_bytes": 288, "instruction_bytes": 2, "restored_gprs": 32, "saved_gprs": 32, "status_restored": true, "updated_epc_used": true}]
+P1 PASS: real 32-bit ebreak and 16-bit c.ebreak; frame, GPRs, CSRs, sp, sret

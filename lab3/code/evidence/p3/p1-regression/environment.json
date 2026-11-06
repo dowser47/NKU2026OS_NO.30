@@ -1,0 +1,23 @@
+{
+  "qemu": [
+    "qemu-system-riscv64",
+    "-machine",
+    "virt",
+    "-m",
+    "128M",
+    "-nographic",
+    "-bios",
+    "default",
+    "-kernel",
+    "bin/best_fit/0/ucore.img",
+    "-S",
+    "-gdb",
+    "tcp:127.0.0.1:57610"
+  ],
+  "gdb": "gdb-multiarch",
+  "stage": "P1 only",
+  "source_base": "328fd3afd8036fb87a6790b3ee697a05e2100a46",
+  "qemu-system-riscv64": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+  "gdb-multiarch": "GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1",
+  "riscv64-unknown-elf-gcc": "riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0"
+}

@@ -1,10 +1,14 @@
-/* lab2: 2414067 */
-#ifndef LAB2_DTB_H
-#define LAB2_DTB_H
+#ifndef __KERN_DRIVER_DTB_H__
+#define __KERN_DRIVER_DTB_H__
+
 #include <defs.h>
-struct memory_info { uintptr_t base; size_t size; };
-int dtb_parse(const void *blob, size_t available, struct memory_info *out);
-void dtb_init(uintptr_t hartid, uintptr_t dtb_pa);
-uintptr_t get_memory_base(void);
-size_t get_memory_size(void);
-#endif
+
+// Defined in entry.S
+extern uint64_t boot_hartid;
+extern uint64_t boot_dtb;
+
+void dtb_init(void);
+uint64_t get_memory_base(void);
+uint64_t get_memory_size(void);
+
+#endif /* !__KERN_DRIVER_DTB_H__ */

@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-06",
+  "passed": true,
+  "origin_files": 56,
+  "identical_origin_files": 46,
+  "missing_origin_files": [],
+  "course_score": "100/100",
+  "course_test_changes": "Only QEMU launch parameter: -device loader -> -kernel; assertions/points/timeouts unchanged",
+  "normal_boot": {
+    "tick_lines": 10,
+    "qemu_exit": 0,
+    "pmm": "default_pmm_manager"
+  },
+  "first_fit_supplemental": "PASS",
+  "best_fit_supplemental": "PASS",
+  "best_fit_original_check": "6/6",
+  "protected_source_checks": "PASS: SAVE_ALL instructions, fixed trap.c functions, supplied PMM checks, injector and course test sources",
+  "versions": {
+    "gcc": "riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0",
+    "qemu": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+    "gdb": "GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1",
+    "python": "Python 3.12.3"
+  },
+  "backup": "/home/dowser47/OS/lab3/backups/20261106-151429/lab3-before-origin.tar.gz",
+  "git_diff_check": "Whitespace warnings inherited from original starter; no functional failure",
+  "commit_push": false
+}

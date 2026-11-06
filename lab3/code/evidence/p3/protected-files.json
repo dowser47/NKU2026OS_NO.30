@@ -1,0 +1,12 @@
+{
+  "kern/trap/trapentry.S": true,
+  "kern/trap/trap.h": true,
+  "kern/driver/clock.c": true,
+  "libs/sbi.h": true,
+  "kern/init/init.c": true,
+  "libs/sbi.c": true,
+  "trap.c_except_exception_handler": true,
+  "notes_outside_repository": true,
+  "no_lab3_unfilled_code": true,
+  "verified_current_trap_source": true
+}

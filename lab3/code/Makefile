@@ -1,14 +1,4 @@
 PROJ	:= lab3
-# lab2: 2414067. Isolate artifacts by backend/case to avoid stale CFLAGS.
-PMM ?= best_fit
-TEST_CASE ?= 0
-MEMORY ?= 128M
-PMM_ID_first_fit := 0
-PMM_ID_best_fit := 1
-PMM_ID_buddy := 2
-ifeq ($(filter $(PMM),first_fit best_fit buddy),)
-$(error PMM must be first_fit, best_fit or buddy)
-endif
 EMPTY	:=
 SPACE	:= $(EMPTY) $(EMPTY)
 SLASH	:= /
@@ -23,6 +13,9 @@ ifndef QEMU
 QEMU := qemu-system-riscv64
 endif
 
+ifndef SPIKE
+SPIKE := spike
+endif
 
 # eliminate default suffix rules
 .SUFFIXES: .c .S .h
@@ -34,20 +27,15 @@ endif
 HOSTCC		:= gcc
 HOSTCFLAGS	:= -Wall -O2
 
-GDB		:= $(GCCPREFIX)gdb
-ifeq ($(shell command -v $(GDB) 2>/dev/null),)
-GDB		:= gdb-multiarch
-endif
-PYTHON		?= python3
+GDB ?= $(shell command -v $(GCCPREFIX)gdb 2>/dev/null || command -v gdb-multiarch)
 
 CC		:= $(GCCPREFIX)gcc
-CFLAGS  := -mcmodel=medany -std=gnu99 -Wno-unused -Werror
+CFLAGS  := -mcmodel=medany -std=gnu99 -Wno-unused -Werror 
 CFLAGS	+= -fno-builtin -Wall -O2 -nostdinc $(DEFS)
 CFLAGS	+= -fno-stack-protector -ffunction-sections -fdata-sections
 CFLAGS	+= -g
-CFLAGS += -DPMM_BACKEND=$(PMM_ID_$(PMM)) -DTEST_CASE=$(TEST_CASE)
+CFLAGS2 = $(CFLAGS) -D ucore_test
 CTYPE	:= c S
-
 LD      := $(GCCPREFIX)ld
 LDFLAGS	:= -m elf64lriscv
 LDFLAGS	+= -nostdlib --gc-sections
@@ -65,8 +53,8 @@ SH		:= sh
 TR		:= tr
 TOUCH	:= touch -c
 
-OBJDIR	:= obj/$(PMM)/$(TEST_CASE)
-BINDIR	:= bin/$(PMM)/$(TEST_CASE)
+OBJDIR	:= obj
+BINDIR	:= bin
 
 ALLOBJS	:=
 ALLDEPS	:=
@@ -78,6 +66,7 @@ listf_cc = $(call listf,$(1),$(CTYPE))
 
 # for cc
 add_files_cc = $(call add_files,$(1),$(CC),$(CFLAGS) $(3),$(2),$(4))
+add_files_cc2 = $(call add_files,$(1),$(CC),$(CFLAGS2) $(3),$(2),$(4))
 create_target_cc = $(call create_target,$(1),$(2),$(3),$(CC),$(CFLAGS))
 
 # for hostcc
@@ -96,7 +85,7 @@ match = $(shell echo $(2) | $(AWK) '{for(i=1;i<=NF;i++){if(match("$(1)","^"$$(i)
 # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # include kernel/user
 
-INCLUDE	+= libs
+INCLUDE	+= libs/
 
 CFLAGS	+= $(addprefix -I,$(INCLUDE))
 
@@ -110,21 +99,23 @@ $(call add_files_cc,$(call listf_cc,$(LIBDIR)),libs,)
 KINCLUDE	+= kern/debug/ \
 			   kern/driver/ \
 			   kern/trap/ \
-			   kern/libs/\
 			   kern/mm/ \
 			   kern/arch/
 
 KSRCDIR		+= kern/init \
-			   kern/debug \
 			   kern/libs \
+			   kern/debug \
 			   kern/driver \
 			   kern/trap \
 			   kern/mm
 
 KCFLAGS		+= $(addprefix -I,$(KINCLUDE))
 
+ifeq ($(MAKECMDGOALS),test)
+$(call add_files_cc2,$(call listf_cc,$(KSRCDIR)),kernel,$(KCFLAGS))
+else
 $(call add_files_cc,$(call listf_cc,$(KSRCDIR)),kernel,$(KCFLAGS))
-
+endif
 KOBJS	= $(call read_packet,kernel libs)
 
 # create kernel target
@@ -156,6 +147,7 @@ $(call finish_all)
 
 IGNORE_ALLDEPS	= clean \
 				  dist-clean \
+				  grade \
 				  touch \
 				  print-.+ \
 				  handin
@@ -169,13 +161,10 @@ endif
 TARGETS: $(TARGETS)
 
 .DEFAULT_GOAL := TARGETS
-
-.PHONY: qemu debug gdb
+.PHONY: qemu spike test
 qemu: $(UCOREIMG) $(SWAPIMG) $(SFSIMG)
-#	$(V)$(QEMU) -kernel $(UCOREIMG) -nographic
 	$(V)$(QEMU) \
 		-machine virt \
-		-m $(MEMORY) \
 		-nographic \
 		-bios default \
 		-kernel $(UCOREIMG)
@@ -183,18 +172,25 @@ qemu: $(UCOREIMG) $(SWAPIMG) $(SFSIMG)
 debug: $(UCOREIMG) $(SWAPIMG) $(SFSIMG)
 	$(V)$(QEMU) \
 		-machine virt \
-		-m $(MEMORY) \
 		-nographic \
 		-bios default \
-		-kernel $(UCOREIMG) \
+		-kernel $(UCOREIMG)\
 		-s -S
 
-gdb: $(kernel)
+gdb:
 	$(GDB) \
-    -ex 'file $(kernel)' \
+    -ex 'file bin/kernel' \
     -ex 'set arch riscv:rv64' \
     -ex 'target remote localhost:1234'
 
+test: $(UCOREIMG) $(SWAPIMG) $(SFSIMG)
+	$(V)$(QEMU) \
+		-machine virt \
+		-nographic \
+		-bios default \
+		-kernel $(UCOREIMG)
+spike: $(UCOREIMG) $(SWAPIMG) $(SFSIMG)
+	$(V)$(SPIKE) $(UCOREIMG)
 
 .PHONY: grade touch
 
@@ -206,23 +202,22 @@ TOUCH_FILES		:= kern/trap/trap.c
 
 MAKEOPTS		:= --quiet --no-print-directory
 
-grade: $(UCOREIMG)
-	$(V)$(PYTHON) tools/verify_p1.py --qemu $(QEMU) --gdb $(GDB) --image $(UCOREIMG) --kernel $(kernel)
-
-.PHONY: grade-boot grade-all
-grade-boot: $(UCOREIMG)
-	$(V)$(PYTHON) tools/verify.py --qemu $(QEMU) --gdb $(GDB) --memory $(MEMORY) --image $(UCOREIMG) --kernel $(kernel)
-
-grade-all:
-	$(V)$(PYTHON) tools/run_tests.py --qemu $(QEMU) --all
-
-QEMU_DEBUG ?= $(HOME)/.cache/oslab/qemu-6.2.0/build-debug/qemu-system-riscv64
-.PHONY: grade-integration grade-source
-grade-integration:
-	$(V)$(PYTHON) tools/integration.py --qemu $(QEMU) --gdb $(GDB)
-
-grade-source:
-	$(V)$(PYTHON) tools/qemu_mmu_debug.py --qemu $(QEMU_DEBUG)
+# 在临时副本内注入课程测试；不改当前源码/镜像，并保留测试控制台记录。
+GRADE_EVIDENCE := $(abspath evidence/baseline-integration)
+grade:
+	@set -eu; \
+	grade_tmp=$$(mktemp -d /tmp/lab3-grade.XXXXXX); \
+	trap 'rm -rf "$$grade_tmp"' EXIT HUP INT TERM; \
+	mkdir -p "$(GRADE_EVIDENCE)"; \
+	tar --exclude=.git --exclude=.vscode --exclude=vcs --exclude=bin --exclude=obj --exclude=evidence -cf - . | tar -C "$$grade_tmp" -xf -; \
+	python3 tools/inject.py "$$grade_tmp"; \
+	grade_status=0; \
+	(cd "$$grade_tmp" && $(SH) tools/grade.sh) >"$(GRADE_EVIDENCE)/grade.log" 2>&1 || grade_status=$$?; \
+	cat "$(GRADE_EVIDENCE)/grade.log"; \
+	for grade_log in "$$grade_tmp"/.qemu.*.out; do \
+	    test ! -f "$$grade_log" || cp "$$grade_log" "$(GRADE_EVIDENCE)/$${grade_log##*/}"; \
+	done; \
+	exit $$grade_status
 
 touch:
 	$(V)$(foreach f,$(TOUCH_FILES),$(TOUCH) $(f))
@@ -249,5 +244,5 @@ tags:
 	@echo TAGS ALL
 	$(V)rm -f cscope.files cscope.in.out cscope.out cscope.po.out tags
 	$(V)find . -type f -name "*.[chS]" >cscope.files
-	$(V)cscope -bq
+	$(V)cscope -bq 
 	$(V)ctags -L cscope.files

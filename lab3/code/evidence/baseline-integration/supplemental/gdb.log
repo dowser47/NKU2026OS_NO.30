@@ -1,0 +1,66 @@
+0x0000000000001000 in ?? ()
+Hardware assisted breakpoint 1 at 0xffffffffc0200dae: file kern/trap/trap.c, line 32.
+
+Breakpoint 1, idt_init () at kern/trap/trap.c:32
+32	    write_csr(sscratch, 0);
+kern_init () at kern/init/init.c:33
+33	    pmm_init();  // init physical memory management
+Hardware assisted breakpoint 2 at 0xffffffffc0201186: file kern/trap/trap.c, line 197.
+
+Breakpoint 2, trap_dispatch (tf=0xffffffffc0205ed0) at kern/trap/trap.c:197
+197	    if ((intptr_t)tf->cause < 0) {
+Hardware assisted breakpoint 3 at 0xffffffffc02011fc: file kern/trap/trapentry.S, line 158.
+
+Breakpoint 3, __trapret () at kern/trap/trapentry.S:158
+158	    RESTORE_ALL
+Hardware assisted breakpoint 4 at 0xffffffffc020008e: file kern/init/init.c, line 33.
+
+Breakpoint 4, 0xffffffffc020008e in kern_init () at kern/init/init.c:33
+33	    pmm_init();  // init physical memory management
+INTEGRATION CASE PASS: illegal16
+Hardware assisted breakpoint 5 at 0xffffffffc0201186: file kern/trap/trap.c, line 197.
+
+Breakpoint 5, trap_dispatch (tf=0xffffffffc0205ed0) at kern/trap/trap.c:197
+197	    if ((intptr_t)tf->cause < 0) {
+Hardware assisted breakpoint 6 at 0xffffffffc02011fc: file kern/trap/trapentry.S, line 158.
+
+Breakpoint 6, __trapret () at kern/trap/trapentry.S:158
+158	    RESTORE_ALL
+Hardware assisted breakpoint 7 at 0xffffffffc0200090: file kern/init/init.c, line 35.
+
+Breakpoint 7, kern_init () at kern/init/init.c:35
+35	    idt_init();  // init interrupt descriptor table
+INTEGRATION CASE PASS: illegal32
+Hardware assisted breakpoint 8 at 0xffffffffc0201186: file kern/trap/trap.c, line 197.
+
+Breakpoint 8, trap_dispatch (tf=0xffffffffc0205ed0) at kern/trap/trap.c:197
+197	    if ((intptr_t)tf->cause < 0) {
+Hardware assisted breakpoint 9 at 0xffffffffc02011fc: file kern/trap/trapentry.S, line 158.
+
+Breakpoint 9, __trapret () at kern/trap/trapentry.S:158
+158	    RESTORE_ALL
+Hardware assisted breakpoint 10 at 0xffffffffc020008e: file kern/init/init.c, line 33.
+
+Breakpoint 10, 0xffffffffc020008e in kern_init () at kern/init/init.c:33
+33	    pmm_init();  // init physical memory management
+INTEGRATION CASE PASS: breakpoint16
+Hardware assisted breakpoint 11 at 0xffffffffc0201186: file kern/trap/trap.c, line 197.
+
+Breakpoint 11, trap_dispatch (tf=0xffffffffc0205ed0) at kern/trap/trap.c:197
+197	    if ((intptr_t)tf->cause < 0) {
+Hardware assisted breakpoint 12 at 0xffffffffc02011fc: file kern/trap/trapentry.S, line 158.
+
+Breakpoint 12, __trapret () at kern/trap/trapentry.S:158
+158	    RESTORE_ALL
+Hardware assisted breakpoint 13 at 0xffffffffc0200090: file kern/init/init.c, line 35.
+
+Breakpoint 13, kern_init () at kern/init/init.c:35
+35	    idt_init();  // init interrupt descriptor table
+INTEGRATION CASE PASS: breakpoint32
+Hardware assisted breakpoint 14 at 0xffffffffc02025b4: file libs/sbi.c, line 17.
+
+Breakpoint 14, sbi_call (arg2=0, arg1=0, arg0=0, sbi_type=8) at libs/sbi.c:17
+17	    __asm__ volatile (
+INTEGRATION_RESULTS=[{"case": "illegal16", "cause": 2, "epc_increment": 2, "only_epc_changed": true, "returned": true}, {"case": "illegal32", "cause": 2, "epc_increment": 4, "only_epc_changed": true, "returned": true}, {"case": "breakpoint16", "cause": 3, "epc_increment": 2, "only_epc_changed": true, "returned": true}, {"case": "breakpoint32", "cause": 3, "epc_increment": 4, "only_epc_changed": true, "returned": true}]
+INTEGRATION GDB PASS: four real exception returns, then 1000 timer interrupts
+[Inferior 1 (process 1) detached]

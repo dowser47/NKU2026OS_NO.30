@@ -1,0 +1,16 @@
+{
+  "qemu_command": [
+    "qemu-system-riscv64",
+    "-machine",
+    "virt",
+    "-m",
+    "128M",
+    "-nographic",
+    "-bios",
+    "default",
+    "-kernel",
+    "bin/best_fit/0/ucore.img"
+  ],
+  "host_cc": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)"
+}
